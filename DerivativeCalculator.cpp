@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cmath>
 
 using Exponent = int;
 
@@ -208,7 +209,7 @@ std::string GetDerivative(const std::string &func)
 
       if (cEnd)
       {
-        int out = pow(constant->value, constant->exponent);
+        int out = std::pow(constant->value, constant->exponent);
         ret << out;
 
         constant++;
