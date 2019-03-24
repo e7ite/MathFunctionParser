@@ -1,11 +1,11 @@
 // DerivativeCalculator.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include "pch.h"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
-#include <cmath>
 
 using Exponent = int;
 
@@ -16,7 +16,7 @@ struct Constant
 
   Constant() = default;
   Constant(int value = 1, Exponent exponent = 1) 
-    : value(value), exponent(exponent) {}
+	: value(value), exponent(exponent) {}
 };
 
 struct Variable
@@ -26,7 +26,7 @@ struct Variable
 
   Variable() = default;
   Variable(char value = 'x', Exponent exponent = 1)
-    : value(value), exponent(exponent) {}
+	: value(value), exponent(exponent) {}
 };
 
 struct Piece
@@ -44,12 +44,12 @@ void CollectData(std::vector<VecT> &vec, std::stringstream &stream)
 {
   if (stream.rdbuf()->in_avail())
   {
-    InputT tmp;
-    stream >> tmp;
+	InputT tmp;
+	stream >> tmp;
 
-    vec.push_back(tmp);
+	vec.push_back(tmp);
 
-    std::stringstream().swap(stream);
+	std::stringstream().swap(stream);
   }
 }
 
@@ -58,173 +58,206 @@ void AppendExponent(std::vector<T> &vec, std::stringstream &stream)
 {
   if (stream.rdbuf()->in_avail())
   {
-    int tmp = 0;
-    vec.at(vec.size() - 1).exponent = tmp;
+	int tmp;
+	stream >> tmp;
 
-    std::stringstream().swap(stream);
+	vec.at(vec.size() - 1).exponent = tmp;
+
+	std::stringstream().swap(stream);
   }
 }
 
-std::vector<Piece> FindPiece(const std::string &func)
+std::vector<Piece> FindPieces(const std::string &func)
 {
   std::vector<Piece> p;
   enum Mode : char
   {
-    PARSE_SIGN,
-    PARSE_CONSTANT,
-    PARSE_VARIABLE,
-    PARSE_EXPONENT
+	PARSE_SIGN,
+	PARSE_CONSTANT,
+	PARSE_VARIABLE,
+	PARSE_EXPONENT
   };
   std::stringstream integers, variables, exponents;
   Mode mode = PARSE_SIGN;
   Mode prevMode = mode;
-  bool exponentToggled = false;
 
   p.push_back(Piece());
 
   for (uint32_t i = 0; i < func.size(); i++)
   {
-    char index = func.at(i);
+	char index = func.at(i);
 
-    if (mode != PARSE_EXPONENT)
-    {
-      prevMode = mode;
+	/*Skip spaces*/
+	if (index == ' ')
+		continue;
 
-      if (isdigit(index))
-      {
-        mode = PARSE_CONSTANT;
+	/*If mode is set to PARSE_EXPONENT, directly place into exponent buffer
+	  else respectively place input into buffers*/
+	if (mode != PARSE_EXPONENT)
+	{
+	  prevMode = mode;
 
-        integers << index;
-      }
-      else if (isalpha(index))
-      {
-        mode = PARSE_VARIABLE;
+	  if (isdigit(index))
+	  {
+		mode = PARSE_CONSTANT;
 
-        variables << index;
-      }
-      else if (index == '+' || index == '-')
-      {
-        mode = PARSE_SIGN;
+		integers << index;
+	  }
+	  else if (isalpha(index))
+	  {
+		mode = PARSE_VARIABLE;
 
-        if (!i)
-          p.at(p.size() - 1).sign = index;
-      }
-    } 
-    else
-    {
-      exponents << index;
-    }
+		variables << index;
+	  }
+	  else if (index == '+' || index == '-')
+	  {
+		mode = PARSE_SIGN;
 
-    if (mode != prevMode)
-    {
-      switch (prevMode)
-      {
-        case PARSE_CONSTANT:
-          CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
-          break;
-        
-        case PARSE_VARIABLE:
-          CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
-          break;
-      }
-    }
+		if (!i)
+		  p.at(p.size() - 1).sign = index;
+	  }
+	} 
+	else
+	{
+	  exponents << index;
+	}
 
-    if (exponentToggled)
-    {
-      int tmp;
-      exponents << index;
-      exponents >> tmp;
+	/*If mode has changed, place data from buffers into its correseponding
+	  vector*/
+	if (mode != prevMode)
+	{
+	  switch (prevMode)
+	  {
+		case PARSE_CONSTANT:
+		  CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
+		  break;
+		
+		case PARSE_VARIABLE:
+		  CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
+		  break;
+	  }
+	}
 
-      if (prevMode == PARSE_CONSTANT)
-        AppendExponent<Constant>(p.at(p.size() - 1).constants, exponents);
-      else if (prevMode == PARSE_VARIABLE)
-        AppendExponent<Variable>(p.at(p.size() - 1).variables, exponents);
+	/*if exponent mode is toggled, place exponent into correct vector*/
+	if (mode == PARSE_EXPONENT)
+	{
+	  if (prevMode == PARSE_CONSTANT)
+		AppendExponent<Constant>(p.at(p.size() - 1).constants, exponents);
+	  else if (prevMode == PARSE_VARIABLE)
+		AppendExponent<Variable>(p.at(p.size() - 1).variables, exponents);
 
-      mode = prevMode;
-      exponentToggled = false;
-    }
+	  mode = prevMode;
+	}
 
-    if (index == '^')
-    {
-      mode = PARSE_EXPONENT;
-      exponentToggled = true;
-    }
+	/*If current character indicates exponent, place parser into exponent
+	  mode*/
+	if (index == '^')
+	  mode = PARSE_EXPONENT;
 
-    if (i && (index == '+' || index == '-'))
-      p.push_back(Piece(index));
+	/*if not index 0 and character is a sign, add new piece*/
+	if (i && (index == '+' || index == '-'))
+	  p.push_back(Piece(index));
   }
 
+  /*Check buffers for any remaining information*/
   switch (mode)
   {
   case PARSE_CONSTANT:
-    CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
-    break;
+	CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
+	break;
 
   case PARSE_VARIABLE:
-    CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
-    break;
+	CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
+	break;
 
   case PARSE_EXPONENT:
-    int tmp;
-    exponents >> tmp;
-
-    if (prevMode == PARSE_CONSTANT)
-      AppendExponent<Constant>(p.at(p.size() - 1).constants, exponents);
-    else if (prevMode == PARSE_VARIABLE)
-      AppendExponent<Variable>(p.at(p.size() - 1).variables, exponents);
-    break;
+	if (prevMode == PARSE_CONSTANT)
+	  AppendExponent<Constant>(p.at(p.size() - 1).constants, exponents);
+	else if (prevMode == PARSE_VARIABLE)
+	  AppendExponent<Variable>(p.at(p.size() - 1).variables, exponents);
+	break;
   }
 
   return p;
 }
 
-
-std::string ProduceDerivatve(std::string &func)
+/*Currently only modifies first variable*/
+void ApplyPowerRule(std::vector<Piece> &p)
 {
-  return "";
+  std::vector<Piece>::iterator i = p.begin();
+
+  while (i != p.end())
+  {
+	std::vector<Variable>::iterator var = i->variables.begin();
+
+	if (var == i->variables.end())
+	{
+		if (i->constants.size())
+			i = p.erase(i);
+
+		continue;
+	}
+
+	if (!i->constants.size() && var->exponent > 0)
+		i->constants.push_back(var->exponent--);
+	else
+		i->constants.at(0).value *= var->exponent--;
+
+	if (!var->exponent)
+		i->variables.erase(var);
+
+	i++;
+  }
 }
 
 std::string GetDerivative(const std::string &func)
 {
   std::stringstream ret;
   std::vector<Piece> pieces;
-  uint32_t i = 0;
 
-  pieces = FindPiece(func);
+  /*Parse input*/
+  pieces = FindPieces(func);
 
+  /*Apply Power Rule To each piece in the vector*/
+  ApplyPowerRule(pieces);
+
+  /*Create a string representation of the vector*/
   for (auto i = pieces.cbegin(); i != pieces.cend(); i++)
   {
-    auto constant = i->constants.crbegin();
-    auto variable = i->variables.crbegin();
+	auto constant = i->constants.cbegin();
+	auto variable = i->variables.cbegin();
 
-    ret << i->sign;
+	ret << i->sign;
 
-    while (true)
-    {
-      bool cEnd = constant != i->constants.crend();
-      bool vEnd = variable != i->variables.crend();
+	while (true)
+	{
+	  bool cEnd = constant != i->constants.cend();
+	  bool vEnd = variable != i->variables.cend();
 
-      if (!cEnd && !vEnd)
-        break;
+	  if (!cEnd && !vEnd)
+		break;
 
-      if (cEnd)
-      {
-        int out = std::pow(constant->value, constant->exponent);
-        ret << out;
+	  if (cEnd)
+	  {
+		/*Apply the exponent to any constants*/
+		int out = static_cast<int>(
+			std::pow(constant->value, constant->exponent)
+		);
+		ret << out;
 
-        constant++;
-      }
+		constant++;
+	  }
 
-      if (vEnd)
-      {
-        if (variable->exponent != 1)
-          ret << variable->value << "^" << variable->exponent;
-        else
-          ret << variable->value;
+	  if (vEnd)
+	  {
+		if (variable->exponent != 1)
+		  ret << variable->value << "^" << variable->exponent;
+		else
+		  ret << variable->value;
 
-        variable++;
-      }
-    }
+		variable++;
+	  }
+	}
   }
 
   return ret.str();
