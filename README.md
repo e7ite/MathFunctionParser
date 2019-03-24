@@ -5,5 +5,3 @@ Limitations:
 - Can take in multiple variables, but doesn't take them into account. (Product rule not used)
 
 - Doesn't support division or multiplication, or changing order of operations with parentheses.
-
-- No simplification is performed; strictly power rule
