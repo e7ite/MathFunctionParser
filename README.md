@@ -1,7 +1,3 @@
-# DerivativeCalculator
-Sinple calculator ithat takes in a function of x, and outputs its derivative using only the power rule.
-
-Limitations:
-- Can take in multiple variables, but doesn't take them into account. (Product rule not used)
-
-- Doesn't support division or multiplication, or changing order of operations with parentheses.
+# MathFunctionParser
+-A dynamically linked library currently for Ubuntu.
+-Simply reads in a string and parses it into workable data.
