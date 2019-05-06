@@ -43,10 +43,7 @@ class Function
 public:
     /*Constructors*/
     Function() = default;
-	Function(const std::string &func)
-    {
-        this->pieces = FindPieces(func);
-    }
+	Function(const std::string &func) { this->pieces = FindPieces(func); }
 
     /*Input Methods*/
     std::vector<Piece> FindPieces(const std::string &func);
@@ -54,22 +51,11 @@ public:
     /*Output Methods*/
 	int Solve(int x);
 	std::string ToString();
-
-    Piece* GetPiece(size_t index)
-    {
-        return &*(this->pieces.begin() + index);
-    }
+    Piece* GetPiece(size_t index) { return &*(this->pieces.begin() + index); }
 
     /*Overloaded Operators*/
-    Piece& operator[](size_t index)
-    {
-        return this->pieces.at(index);
-    }
-
-    std::vector<Piece>& operator()()
-    {
-        return this->pieces;
-    }
+    Piece& operator[](size_t index) { return this->pieces.at(index); }
+    std::vector<Piece>& operator()() { return this->pieces; }
 
 private:
     /*Private Helper Methods*/
