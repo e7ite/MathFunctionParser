@@ -28,55 +28,143 @@ void Function::AppendExponent(std::vector<T> &vec, std::stringstream &stream)
     }
 }
 
-int Function::Solve(int x)
+void Function::ExecuteBranch(OperationStack &opStack, ValueStack &vStack)
 {
-    int sum = 0;
-    for (const auto &i : this->pieces)
+    while (opStack.top() != '(')
+        ExecuteOperation(vStack, opStack);
+    
+    opStack.pop();
+}
+
+size_t Function::ExecuteDigit(const std::string &exp, size_t n, size_t nPos, ValueStack &vStack)
+{
+    double value = 0;
+
+    while (nPos < n && isdigit(exp[nPos]))
+        value = 10 * value + (exp[nPos++] - '0');
+
+    vStack.push(value);
+
+    return nPos;
+}
+
+void Function::ExecuteOperator(char op, ValueStack &vStack, OperationStack &opStack)
+{
+    while (!opStack.empty() && OperatorCausesEvaluation(opStack.top(), op))
+        ExecuteOperation(vStack, opStack);
+
+    opStack.push(op);
+}
+
+bool Function::OperatorCausesEvaluation(char prevOp, char op)
+{
+    switch (op)
     {
-        auto constant = i.constants.cbegin();
-        auto variable = i.variables.cbegin();
+        case '+':
+        case '-':
+            return prevOp != '(';
+        case '*':
+        case '/':
+            return prevOp == '*' || prevOp == '/';
+        case ')':
+            return true;
+    }
+	
+    return false;
+}
 
-        while (true)
-		{
-			bool cEnd = constant != i.constants.cend();
-			bool vEnd = variable != i.variables.cend();
-
-			if (!cEnd && !vEnd)
-				break;
-
-            if (vEnd)
-            {
-             	/*Apply the exponent to any variables*/
-                if (!sum)
-                    sum += static_cast<int>(
-                        pow(x, variable->exponent)
-                    );
-                else
-                    sum *= static_cast<int>(
-                        pow(x, variable->exponent)
-                    );
-
-                variable++;
-            }
-
-			if (cEnd)
-			{
-                /*Apply the exponent to any constants*/
-				if (!sum)
-                    sum += static_cast<int>(
-                        pow(constant->value, constant->exponent)
-                    );
-                else
-                    sum *= static_cast<int>(
-                        pow(constant->value, constant->exponent)
-                    );
-
-				constant++;
-            }
-        }
+void Function::ExecuteOperation(ValueStack &vStack, OperationStack &opStack)
+{
+    double rightOperand = vStack.top();
+    vStack.pop();
+    
+    double leftOperand = vStack.top();
+    vStack.pop();
+    
+    char operation = opStack.top();
+    opStack.pop();
+    
+    double result;
+    switch (operation)
+    {
+        case '+':
+            result = leftOperand + rightOperand;
+            break;
+        case '-':
+            result = leftOperand - rightOperand;
+            break;
+        case '*':
+            result = leftOperand * rightOperand;
+            break;
+        case '/':
+            result = leftOperand / rightOperand;
+            break;
     }
 
-    return sum;
+    vStack.push(result);
+}
+
+double Function::EvaluateExpression(const std::string &exp)
+{
+    OperationStack opStack;
+    ValueStack vStack;
+    size_t nPos = 0;
+    size_t size = exp.size();
+
+    opStack.push('(');
+
+    while (nPos <= size)
+    {
+        if (nPos == size || exp[nPos] == ')')
+        {
+            ExecuteBranch(opStack, vStack);
+            nPos++;
+        }
+        else if (isdigit(exp[nPos]))
+            nPos = ExecuteDigit(exp, size, nPos, vStack);
+        else
+            ExecuteOperator(exp[nPos++], vStack, opStack);
+    }
+
+    return vStack.top();
+}
+
+int Function::Solve(int x)
+{
+	std::string toEvaluate = this->ToString();
+	std::string tmp;
+	std::vector<size_t> indexes;
+
+	std::stringstream converter;
+	converter << x;
+	converter >> tmp;
+	tmp = "*" + tmp;
+
+	size_t index = toEvaluate.find("x");
+	size_t size = toEvaluate.size();
+
+	while (index != std::string::npos 
+		&& std::find(indexes.begin(),
+		indexes.end(), index) == indexes.end())
+	{
+		indexes.push_back(index);
+
+		index = toEvaluate.substr(index + 1, size).find("x") + index + 1;		
+	}
+
+	std::vector<size_t>::iterator i = indexes.begin();
+	while (i != indexes.end())
+	{
+		toEvaluate = toEvaluate.substr(0, *i) 
+			+ tmp + toEvaluate.substr(*i + 1, size);
+
+		for (std::vector<size_t>::iterator j = ++i; j != indexes.end(); ++j)
+			++(*j);
+			
+		size++;	
+	}
+
+	return this->EvaluateExpression(toEvaluate);
 }
 
 std::string Function::ToString()
@@ -87,7 +175,8 @@ std::string Function::ToString()
         auto constant = i->constants.cbegin();
         auto variable = i->variables.cbegin();
 
-        ret << i->sign;
+		if (i->sign != '-' && i != this->pieces.cbegin())
+        	ret << i->sign;
 
 		while (true)
 		{
@@ -238,31 +327,3 @@ std::vector<Piece> Function::FindPieces(const std::string &func)
     return p;
 }
 
-/*Currently only modifies first variable*/
-void ApplyPowerRule(Function &func)
-{
-    std::vector<Piece>::iterator i = func().begin();
-	
-	while (i != func().end())
-    {
-		std::vector<Variable>::iterator var = i->variables.begin();
-
-		if (var == i->variables.end())
-		{
-			if (i->constants.size())
-				i = func().erase(i);
-				
-			continue;
-		}
-
-		if (!i->constants.size() && var->exponent > 0)
-			i->constants.push_back(var->exponent--);
-		else
-			i->constants.at(0).value *= var->exponent--;
-
-		if (!var->exponent)
-			i->variables.erase(var);
-
-		i++;
-    }
-}

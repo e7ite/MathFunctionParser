@@ -13,3 +13,12 @@ parser.o:
 clean:
 	rm -rf *.o
 
+test: clean test.o parser.test
+	g++ -o test test.o parser.o
+
+test.o:
+	g++ -g -c test.cpp 
+	
+parser.test:
+	g++ -g -c parser.cpp
+
