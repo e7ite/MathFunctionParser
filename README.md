@@ -4,7 +4,5 @@
 
 -Simply reads in a string and parses it into workable data.
 
-Credits:
-
-http://www.codinghelmet.com/exercises/expression-evaluator
--Recursive Arithmetic Expression Solver Code
+# Credits:
+Zoran Horvat(http://www.codinghelmet.com/exercises/expression-evaluator)|Recursive Arithmetic Expression Solver Code
