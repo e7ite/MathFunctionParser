@@ -7,4 +7,4 @@
 ## Credits:
 Name|Reason
 ----|------
-[Zoran Horvat](http://www.codinghelmet.com/exercises/expression-evaluator) | Recursive arithmetic expression solver Algorithm
+[Zoran Horvat](http://www.codinghelmet.com/exercises/expression-evaluator) | Recursive arithmetic expression solver algorithm
