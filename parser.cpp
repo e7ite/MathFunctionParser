@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "parser.hpp"
 
 template <typename VecT, typename InputT>
 void Function::CollectData(std::vector<VecT> &vec, std::stringstream &stream)

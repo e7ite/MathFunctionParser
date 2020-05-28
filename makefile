@@ -1,7 +1,9 @@
-make: clean parser.o libparser.so mv
+make: clean parser.o libparser.so
+
+install: clean parser.o libparser.so mv
 	sudo ldconfig
 
-mv: 
+mv:
 	sudo mv libparser.so /usr/lib/
 
 libparser.so:
@@ -11,14 +13,14 @@ parser.o:
 	g++ -fPIC -c parser.cpp
 
 clean:
-	rm -rf *.o
+	rm -rf *.o test.out libparser.so
 
 test: clean test.o parser.test
-	g++ -o test test.o parser.o
+	g++ -o test.out test.o parser.o
 
 test.o:
-	g++ -g -c test.cpp 
-	
+	g++ -g -c test.cpp
+
 parser.test:
 	g++ -g -c parser.cpp
 
