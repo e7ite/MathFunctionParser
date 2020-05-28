@@ -51,14 +51,15 @@ public:
     /*Input Methods*/
     std::vector<Piece> FindPieces(const std::string &func);
 
-      /*Output Methods*/
-    int Solve(int x);
-    std::string ToString();
-    Piece* GetPiece(size_t index) { return &*(this->pieces.begin() + index); }
+    /*Output Methods*/
+    std::vector<Piece>& GetPieces() { return this->pieces; }
+    double Solve(double x) const;
+    std::string ToString() const;
+    const Piece* GetPiece(size_t index) const { return &*(this->pieces.begin() + index); }
+    double operator()(double x) const { return this->Solve(x); } 
 
     /*Overloaded Operators*/
     Piece& operator[](size_t index) { return this->pieces.at(index); }
-
 
 private:
     /*Private Helper Methods For Parser*/
@@ -68,10 +69,15 @@ private:
     void AppendExponent(std::vector<T> &vec, std::stringstream &stream);
 
     /*Private Helper Methods For Solver*/
-    void ExecuteBranch(OperationStack &opStack, ValueStack &vStack);
-    size_t ExecuteDigit(const std::string &exp, size_t n, size_t nPos, ValueStack &vStack);
-    void ExecuteOperator(char op, ValueStack &vStack, OperationStack &opStack);
-    bool OperatorCausesEvaluation(char prevOp, char op);
-    void ExecuteOperation(ValueStack &vStack, OperationStack &opStack);
-    double EvaluateExpression(const std::string &exp);
+    bool OperatorCausesEvaluation(char prevOp, char op) const;
+    size_t ExecuteExponent(const std::string &exp, size_t n, 
+        size_t nPos, ValueStack &vStack) const;
+    size_t ExecuteDigit(const std::string &exp, size_t n, 
+	    size_t nPos, bool negative, ValueStack &vStack) const;
+    void ExecuteOperator(char op, ValueStack &vStack,
+        OperationStack &opStack) const;
+    void ExecuteOperation(ValueStack &vStack, OperationStack &opStack) const;
+    void ExecuteBranch(OperationStack &opStack, ValueStack &vStack) const;
+public:
+    double EvaluateExpression(const std::string &exp) const;
 };
