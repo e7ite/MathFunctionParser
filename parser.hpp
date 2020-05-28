@@ -41,7 +41,7 @@ struct Piece
 
 class Function
 {
-	std::vector<Piece> pieces;
+    std::vector<Piece> pieces;
 
 public:
     /*Constructors*/
@@ -73,7 +73,7 @@ private:
     size_t ExecuteExponent(const std::string &exp, size_t n, 
         size_t nPos, ValueStack &vStack) const;
     size_t ExecuteDigit(const std::string &exp, size_t n, 
-	    size_t nPos, bool negative, ValueStack &vStack) const;
+        size_t nPos, bool negative, ValueStack &vStack) const;
     void ExecuteOperator(char op, ValueStack &vStack,
         OperationStack &opStack) const;
     void ExecuteOperation(ValueStack &vStack, OperationStack &opStack) const;
