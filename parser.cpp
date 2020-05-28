@@ -335,11 +335,11 @@ std::vector<Piece> Function::FindPieces(const std::string &func)
         {
             switch (prevMode)
             {
-            case PARSE_CONSTANT:
-                this->CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
+                case PARSE_CONSTANT:
+                    this->CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
                 break;
-            case PARSE_VARIABLE:
-                this->CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
+                case PARSE_VARIABLE:
+                    this->CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
                 break;
             }
         }
@@ -368,17 +368,17 @@ std::vector<Piece> Function::FindPieces(const std::string &func)
     /*Check buffers for any remaining information*/
     switch (mode)
     {
-    case PARSE_CONSTANT:
-        CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
+        case PARSE_CONSTANT:
+            CollectData<Constant, int>(p.at(p.size() - 1).constants, integers);
         break;
-    case PARSE_VARIABLE:
-        CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
+        case PARSE_VARIABLE:
+            CollectData<Variable, char>(p.at(p.size() - 1).variables, variables);
         break;
-    case PARSE_EXPONENT:
-        if (prevMode == PARSE_CONSTANT)
-            AppendExponent<Constant>(p.at(p.size() - 1).constants, exponents);
-        else if (prevMode == PARSE_VARIABLE)
-            AppendExponent<Variable>(p.at(p.size() - 1).variables, exponents);
+        case PARSE_EXPONENT:
+            if (prevMode == PARSE_CONSTANT)
+                AppendExponent<Constant>(p.at(p.size() - 1).constants, exponents);
+            else if (prevMode == PARSE_VARIABLE)
+                AppendExponent<Variable>(p.at(p.size() - 1).variables, exponents);
         break;
     }
 
